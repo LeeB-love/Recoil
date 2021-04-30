@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ArrayOfTreeViewNode xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <TreeViewNode xsi:type="BookmarkNode">
+    <Level>0</Level>
+    <IsExpanded>false</IsExpanded>
+    <IsLeaf>true</IsLeaf>
+    <Name>guard_brain_v2</Name>
+    <Children />
+    <CanSelect>true</CanSelect>
+    <HasError>false</HasError>
+    <Path>C:\workspace/guard_brain_v2</Path>
+    <RepoType>Git</RepoType>
+  </TreeViewNode>
+</ArrayOfTreeViewNode>

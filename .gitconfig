@@ -1,0 +1,14 @@
+[user]
+	name = LAPTOP-CV4RUMR1\\이봉하
+	email = log22333@gmail.com
+[pack]
+	windowMemory = 3000m
+	packSizeLimit = 100m
+	threads = 1
+	threads = 1
+	sizeLimit = 3000m
+[difftool "sourcetree"]
+	cmd = '' \"$LOCAL\" \"$REMOTE\"
+[mergetool "sourcetree"]
+	cmd = "'' "
+	trustExitCode = true

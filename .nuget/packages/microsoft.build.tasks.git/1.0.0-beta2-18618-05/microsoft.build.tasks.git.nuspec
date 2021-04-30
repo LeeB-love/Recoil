@@ -1,0 +1,18 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2012/06/nuspec.xsd">
+  <metadata>
+    <id>Microsoft.Build.Tasks.Git</id>
+    <version>1.0.0-beta2-18618-05</version>
+    <authors>Microsoft</authors>
+    <owners>Microsoft</owners>
+    <requireLicenseAcceptance>true</requireLicenseAcceptance>
+    <developmentDependency>true</developmentDependency>
+    <licenseUrl>http://go.microsoft.com/fwlink/?LinkId=529443</licenseUrl>
+    <projectUrl>https://github.com/dotnet/sourcelink</projectUrl>
+    <description>MSBuild tasks providing git repository information.</description>
+    <copyright>© Microsoft Corporation. All rights reserved.</copyright>
+    <tags>MSBuild Tasks source control git</tags>
+    <serviceable>true</serviceable>
+    <repository type="git" url="https://github.com/dotnet/sourcelink" commit="fb8687573edabdba19d4de4d732664d7e1b11997" />
+  </metadata>
+</package>
