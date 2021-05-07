@@ -20,7 +20,7 @@ code {
 
 .menubar{
   background-color: whitesmoke;
-  width: 1102px;
+  width: 1404px;
   margin: 0 auto;
   height: 30px;
 }
@@ -39,7 +39,7 @@ code {
 .canvas-select{
   border: 1px dashed gray;
   cursor: crosshair;
-  /* background-color: rgb(143, 168, 250); */
+  background-color: rgb(143, 168, 250);
   opacity: 35%;
   position: absolute;
   left:0px;
@@ -110,4 +110,39 @@ color: green
 }
 .react-contextmenu-item .watchlist{
 color: rebeccapurple
+}
+
+.stateBar-container{
+  display: block;
+  padding-top: 20px;
+  padding-bottom: 50px;
+  height: 300px;
+  background-color: rgb(240, 250, 248);
+}
+
+.stateBar-container > div{
+  margin: 20px;
+}
+
+
+.container{
+  justify-content: center;
+  display: grid;
+  grid-template-columns: 180px 1400px;
+}
+
+h1{
+  font-size: 40px;
+  margin: 2px;
+}
+
+.state-name{
+  display: inline-block;
+  margin-bottom: 10px;
+  font-weight: bold;
+}
+
+
+.canvas-div{
+  overflow: auto;
 }

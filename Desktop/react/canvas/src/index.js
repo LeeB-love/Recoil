@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import canvasToImage from 'canvas-to-image';
 import ReactDOM from 'react-dom';
-import { Brush, Slash, EraserFill, Circle, Square, Heptagon, BoundingBoxCircles, Clipboard, Scissors, Bezier, ArrowRepeat, Fonts, CartX } from 'react-bootstrap-icons';
+import { Brush, Slash, EraserFill, Circle, Square, Heptagon, BoundingBoxCircles, Clipboard, Scissors, Bezier, ArrowRepeat, ArrowsAngleExpand, ArrowsAngleContract} from 'react-bootstrap-icons';
 import './index.css';
 
 const Menu = (props) => {
@@ -60,7 +60,7 @@ const Menu = (props) => {
   }
 
   const onClickRotateL = () => {
-    props.setTrans(trans => ({ ...trans, rotateL: 1 }));
+    props.setTrans(trans => ({ rotateL: 1 }));
   }
 
   const onClickNewFile = () => {
@@ -88,16 +88,16 @@ const Menu = (props) => {
     <div className='menubar'>
       <button onClick={onClickNewFile} title="새로운 캔버스">new file</button>
       <button onClick={onClickSaveFile} title="저장">save</button>
-      <button onClick={onClickOpenFile} title="불러오기">open</button>&nbsp;&nbsp;&nbsp;
+      <button onClick={onClickOpenFile} title="불러오기">open</button>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 
       <button onClick={onClickUndo} title="실행취소">undo</button>
-      <button onClick={onClickRedo} title="재실행">redo</button>&nbsp;&nbsp;&nbsp;
+      <button onClick={onClickRedo} title="재실행">redo</button>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 
       <span>line color</span>&nbsp;
       <input type="color" onChange={onchangeStrokeColor} />&nbsp;&nbsp;&nbsp;
       <span>line width</span>&nbsp;
       <select onChange={onchangeLineWidth}>
-        <option value="0">없음</option>
+        {/* <option value="0">없음</option> */}
         <option value="1" selected>1</option>
         <option value="2">2</option>
         <option value="3">3</option>
@@ -109,17 +109,17 @@ const Menu = (props) => {
         <option value="50">50</option>
       </select>&nbsp;&nbsp;&nbsp;
       <span>paint color</span>&nbsp;
-      <input type="color" onChange={onchangePaintColor} />&nbsp;&nbsp;&nbsp;
+      <input type="color" onChange={onchangePaintColor} />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
       <button onClick={onClickBrush} title="브러쉬"><Brush/></button>
       <button onClick={onClickLine} title="선분"><Slash/></button>
       <button onClick={onClickCurve} title="베지어 곡선"><Bezier/></button>
-      <button onClick={onClickEraser} title="지우개"><EraserFill/></button>&nbsp;&nbsp;&nbsp;
+      <button onClick={onClickEraser} title="지우개"><EraserFill/></button>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
       <button onClick={onClickEllipse} title="타원 (shift를 누르고 그리면 원형이 그려집니다.)"><Circle/></button>
       <button onClick={onClickRect} title="직사각형 (shift를 누르고 그리면 정사각형이 그려집니다.)"><Square/></button>
       <button onClick={onClickPolygon} title="다각형 (shift를 누르고 클릭 시 도형이 완성됩니다.)"><Heptagon/></button>&nbsp;&nbsp;&nbsp;
       <button onClick={onClickSelect} title="영역 선택"><BoundingBoxCircles/></button>
       <button onClick={onClickPaste} title="붙여넣기"><Clipboard/></button>
-      <button onClick={onClickCut} title="잘라내기"><Scissors/></button>&nbsp;&nbsp;&nbsp;
+      <button onClick={onClickCut} title="잘라내기"><Scissors/></button>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
       <span>rotate</span>&nbsp;
       <button onClick={onClickRotateL} title="회전"><ArrowRepeat/></button>
     </div>
@@ -190,11 +190,16 @@ const Canvas = (props) => {
   const [isClickPoint, setIsClickPoint] = useState(false);
   const [cvsArr, setCvsArr] = useState([]);
   const [udCount, setUdCount] = useState(0); 
+  const [isKeyPressed, setIsKeyPressed] = useState({ctrl: 0});
 
 
   const onKeyDown = React.useCallback((e) => {
+    console.log(e);
     if (e.code === "ShiftLeft") {
       setIsShiftPress(1);
+    }
+    else if(e.code === "ControlLeft"){
+      setIsKeyPressed({ctrl: 1})
     }
   }, []);
 
@@ -202,60 +207,33 @@ const Canvas = (props) => {
     if (e.code === "ShiftLeft") {
       setIsShiftPress(0);
     }
-  }, [])
-
-  const onKeyUpE = React.useCallback((e) => {
-    if (e.code === "Escape") {
+    else if(e.code === "ControlLeft"){
+      setIsKeyPressed({ctrl: 0})
+    }
+    else if(e.code === "Escape") {
       e.preventDefault();
       props.setBtnState({ line: 0, curve: 0, ellipse: 0, rect: 0, polygon: 0, eraser: 0, paint: 0, brush: 0 })
       props.setCcp({ copy: 0, paste: 0, cut: 0 })
+      props.setTrans({ rotateL: 0})
       setEsc(1);
     }
   }, [])
 
-  const onKeyDownCtrl = React.useCallback((e)=>{
-    console.log(e)
-    if(e.code === "ControlLeft"){
-      e.preventDefault();
-
-    }
-  }, []);
-
-  const onKeyDownZ = React.useCallback((e)=>{
-    if(e.code === "KeyZ"){
-
-    }
-  }, []);
-
-  const onKeyDownY = React.useCallback((e)=>{
-    if(e.code === "KeyY"){
-
-    }
-  }, []);
 
   useEffect(() => {
     document.addEventListener('keydown', onKeyDown);
     document.addEventListener('keyup', onKeyUp);
-    document.addEventListener('keyup', onKeyUpE);
-    document.addEventListener('keydown', onKeyDownCtrl);
-    document.addEventListener('keydown', onKeyDownZ);
-    document.addEventListener('keydown', onKeyDownY);
-
+   
     return () => {
       document.removeEventListener('keydown', onKeyDown);
       document.removeEventListener('keyup', onKeyUp);
-      document.removeEventListener('keyup', onKeyUpE);
-      document.removeEventListener('keydown', onKeyDownCtrl);
-      document.removeEventListener('keydown', onKeyDownZ);
-      document.removeEventListener('keydown', onKeyDownY);
-
     }
   }, []);
 
 
   //실행 취소
   useEffect(() => {
-    if(props.undo === 1){
+    if(props.undo === 1 || (isKeyPressed.ctrl===1 && isKeyPressed.z === 1)){
       if(udCount === 5){
         props.setUndo(0);
         return;
@@ -297,7 +275,7 @@ const Canvas = (props) => {
       console.log("udCount : ",count)
       console.log("cvsArr : ", cvsArr);
 
-      context.clearRect(0, 0, canvas.width, canvas.height)
+      context.clearRect(0, 0, canvas.width, canvas.height);
       context.drawImage(cvsArr[(cvsArr.length-1)-count], 0,0,canvas.width,canvas.height);
       setUdCount(count);
       props.setRedo(0);
@@ -318,7 +296,7 @@ const Canvas = (props) => {
     props.setStrokeLineWidth(1);
     props.setBtnState({ line: 0, curve: 0, ellipse: 0, rect: 0, polygon: 0, eraser: 0, paint: 0, select: 0, brush: 0 })
     props.setFillColor('#000000')
-    props.setTrans({ rotateR: 0, scale: 0 })
+    props.setTrans({ rotateL: 0})
     props.setCcp({ copy: 0, paste: 0, cut: 0 })
     setSelectPoint();
     props.setF(f => ({ ...f, newFile: 0 }))
@@ -351,6 +329,16 @@ const Canvas = (props) => {
     if (props.btnState.eraser === 1) {
       props.setBtnState(btnState => ({ ...btnState, eraser: 0 }))
     }
+    if(props.ccp.copy === 1){
+      props.setCcp({copy: 0, paste: 0, cut: 0})
+      canvas2 = canvas2Ref.current;
+      context2 = canvas2.getContext("2d");
+      context2.clearRect(0,0,canvas2.width, canvas2.height)
+      setSelectPoint();
+      props.setSelect({ sX: 0, sY: 0, eX: 0, eY: 0 });
+    }
+
+
     //canvas 요소에 접근해서 참조값 가져오기
     canvas = canvasRef.current;
     //getContext()로 캔버스의 2d context 얻어오기
@@ -379,11 +367,13 @@ const Canvas = (props) => {
         let y = e.offsetY;
         context.lineTo(x, y);
         context.stroke();
+        
       }
     }
 
     const onMouseup = () => {
       isMouseDown = false;
+      
       getCanvasScreenshot(canvas, cvsArr, setCvsArr, udCount, setUdCount);
     }
 
@@ -410,6 +400,16 @@ const Canvas = (props) => {
     if (props.btnState.eraser === 1) {
       props.setBtnState(btnState => ({ ...btnState, eraser: 0 }))
     }
+    if(props.ccp.copy === 1){
+      props.setCcp({copy: 0, paste: 0, cut: 0})
+      canvas2 = canvas2Ref.current;
+      context2 = canvas2.getContext("2d");
+      context2.clearRect(0,0,canvas2.width, canvas2.height)
+      setSelectPoint();
+      props.setSelect({ sX: 0, sY: 0, eX: 0, eY: 0 });
+    }
+
+
     //canvas 요소에 접근해서 참조값 가져오기
     canvas = canvasRef.current;
     //getContext()로 캔버스의 2d context 얻어오기
@@ -462,7 +462,9 @@ const Canvas = (props) => {
     if(props.ccp.copy === 1){
       props.setCcp({copy: 0, paste: 0, cut: 0})
       setSelectPoint();
+      props.setSelect({ sX: 0, sY: 0, eX: 0, eY: 0 });
     }
+
 
     canvas = canvasRef.current;
     context = canvas.getContext("2d");
@@ -527,10 +529,16 @@ const Canvas = (props) => {
       }
     }
 
+    const onMousemove = (e)=>{
+      props.setCursor({x:e.offsetX, y:e.offsetY})
+    }
+
     canvas2.addEventListener("click", onClick)
+    canvas2.addEventListener("mousemove", onMousemove);
 
     return () => {
       canvas2.removeEventListener("click", onClick)
+      canvas2.removeEventListener("mousemove", onMousemove);
     }
   }, [props.btnState.curve, props.strokeColor, props.strokeLineWidth, udCount])
 
@@ -546,6 +554,15 @@ const Canvas = (props) => {
     if (props.btnState.eraser === 1) {
       props.setBtnState(btnState => ({ ...btnState, eraser: 0 }))
     }
+    if(props.ccp.copy === 1){
+      props.setCcp({copy: 0, paste: 0, cut: 0})
+      canvas2 = canvas2Ref.current;
+      context2 = canvas2.getContext("2d");
+      context2.clearRect(0,0,canvas2.width, canvas2.height)
+      setSelectPoint();
+      props.setSelect({ sX: 0, sY: 0, eX: 0, eY: 0 });
+    }
+
 
     canvas = canvasRef.current;
     context = canvas.getContext("2d");
@@ -570,10 +587,13 @@ const Canvas = (props) => {
         context.strokeStyle = props.strokeColor;
         context.lineWidth = props.strokeLineWidth;
 
-        context.ellipse((startPointX + (endPointX - startPointX) / 2), (startPointY + (endPointY - startPointY) / 2), (endPointX - startPointX) / 2, (endPointX - startPointX) / 2, 0, 0, 2 * Math.PI);
-        context.stroke();
         
-        getCanvasScreenshot(canvas, cvsArr, setCvsArr, udCount, setUdCount);
+        if(endPointX>startPointX && endPointY>startPointY){
+          context.ellipse((startPointX + (endPointX - startPointX) / 2), (startPointY + (endPointY - startPointY) / 2), (endPointX - startPointX) / 2, (endPointX - startPointX) / 2, 0, 0, 2 * Math.PI);
+          context.stroke();
+          getCanvasScreenshot(canvas, cvsArr, setCvsArr, udCount, setUdCount);
+        }
+
 
         if (props.btnState.paint !== 0) {
           context.fillStyle = props.fillColor
@@ -586,10 +606,12 @@ const Canvas = (props) => {
 
         context.strokeStyle = props.strokeColor;
         context.lineWidth = props.strokeLineWidth;
-
-        context.ellipse((startPointX + (endPointX - startPointX) / 2), (startPointY + (endPointY - startPointY) / 2), (endPointX - startPointX) / 2, (endPointY - startPointY) / 2, 0, 0, 2 * Math.PI);
-        context.stroke();
-        getCanvasScreenshot(canvas, cvsArr, setCvsArr, udCount, setUdCount);
+        
+        if(endPointX>startPointX && endPointY>startPointY){
+          context.ellipse((startPointX + (endPointX - startPointX) / 2), (startPointY + (endPointY - startPointY) / 2), (endPointX - startPointX) / 2, (endPointY - startPointY) / 2, 0, 0, 2 * Math.PI);
+          context.stroke();
+          getCanvasScreenshot(canvas, cvsArr, setCvsArr, udCount, setUdCount);
+        }
         if (props.btnState.paint !== 0) {
           context.fillStyle = props.fillColor
           context.fill();
@@ -621,6 +643,15 @@ const Canvas = (props) => {
     if (props.btnState.eraser === 1) {
       props.setBtnState(btnState => ({ ...btnState, eraser: 0 }))
     }
+    if(props.ccp.copy === 1){
+      props.setCcp({copy: 0, paste: 0, cut: 0})
+      canvas2 = canvas2Ref.current;
+      context2 = canvas2.getContext("2d");
+      context2.clearRect(0,0,canvas2.width, canvas2.height)
+      setSelectPoint();
+      props.setSelect({ sX: 0, sY: 0, eX: 0, eY: 0 });
+    }
+
 
     canvas = canvasRef.current;
     context = canvas.getContext("2d");
@@ -692,6 +723,16 @@ const Canvas = (props) => {
     if (props.btnState.eraser === 1) {
       props.setBtnState(btnState => ({ ...btnState, eraser: 0 }))
     }
+    if(props.ccp.copy === 1){
+      props.setCcp({copy: 0, paste: 0, cut: 0})
+      canvas2 = canvas2Ref.current;
+      context2 = canvas2.getContext("2d");
+      context2.clearRect(0,0,canvas2.width, canvas2.height)
+      setSelectPoint();
+      props.setSelect({ sX: 0, sY: 0, eX: 0, eY: 0 });
+    }
+
+
     canvas = canvasRef.current;
     context = canvas.getContext("2d");
 
@@ -754,6 +795,15 @@ const Canvas = (props) => {
     if (props.btnState.brush === 1) {
       props.setBtnState(btnState => ({ ...btnState, brush: 0 }))
     }
+    if(props.ccp.copy === 1){
+      props.setCcp({copy: 0, paste: 0, cut: 0})
+      canvas2 = canvas2Ref.current;
+      context2 = canvas2.getContext("2d");
+      context2.clearRect(0,0,canvas2.width, canvas2.height)
+      setSelectPoint();
+      props.setSelect({ sX: 0, sY: 0, eX: 0, eY: 0 });
+    }
+
 
     canvas = canvasRef.current;
     context = canvas.getContext("2d");
@@ -792,6 +842,12 @@ const Canvas = (props) => {
     if (props.ccp.copy !== 1) {
       return;
     }
+    if (props.btnState.brush === 1) {
+      props.setBtnState(btnState => ({ ...btnState, brush: 0 }))
+    }
+    if (props.btnState.eraser === 1) {
+      props.setBtnState(btnState => ({ ...btnState, eraser: 0 }))
+    }
     if (isClickPoint) {
       return
     }
@@ -814,6 +870,7 @@ const Canvas = (props) => {
     const onMousemove = (e) => {
       endPointX = e.offsetX;
       endPointY = e.offsetY;
+      props.setCursor({x: endPointX, y: endPointY });
       if (isMouseDown) {
         //canvas2 리셋
         context2.clearRect(0, 0, canvas.width, canvas.height);
@@ -821,8 +878,10 @@ const Canvas = (props) => {
         context2.fillStyle = '#0000FF'
         //점선으로 지정
         context2.setLineDash([4, 2]);
+       
         //사각형 그리기
         context2.strokeRect(startPointX, startPointY, (endPointX - startPointX), (endPointY - startPointY));
+        
         //표시점들...
         createPoint(context2, startPointX, startPointY, endPointX, endPointY);
       }
@@ -832,13 +891,16 @@ const Canvas = (props) => {
       isMouseDown = false;
       endPointX = e.offsetX;
       endPointY = e.offsetY;
+      
       //사각형 그리기
       context2.strokeRect(startPointX, startPointY, (endPointX - startPointX), (endPointY - startPointY));
+
       if (startPointX !== endPointX && startPointY !== endPointY) {
         //선택영역 이미지 데이터 저장
         imageData = context.getImageData(startPointX, startPointY, (endPointX - startPointX), (endPointY - startPointY));
         //선택영역 위치 저장
-        setSelectPoint({ sX: startPointX, sY: startPointY, eX: endPointX, eY: endPointY })
+        setSelectPoint({ sX: startPointX, sY: startPointY, eX: endPointX, eY: endPointY });
+        props.setSelect({ sX: startPointX, sY: startPointY, eX: endPointX, eY: endPointY });
       }
       props.setBtnState(btnState => ({ ...btnState, select: 0 }))
     }
@@ -861,7 +923,6 @@ const Canvas = (props) => {
     if (!selectPoint) {
       return;
     }
-    console.log("dkssud")
 
     canvas2 = canvas2Ref.current;
     context2 = canvas2.getContext("2d");
@@ -873,6 +934,7 @@ const Canvas = (props) => {
     if (esc === 1) {
       context2.clearRect(0, 0, canvas2.width, canvas2.height);
       setSelectPoint();
+      props.setSelect({ sX: 0, sY: 0, eX: 0, eY: 0 });
       props.setCcp(ccp=>({...ccp, copy: 0}));
       setEsc(0);
     }
@@ -882,6 +944,8 @@ const Canvas = (props) => {
       let y = e.offsetY;
       if(!((sX<=x && x<=eX)&&(sY<=y&&y<=eY))){
         context2.clearRect(0, 0, canvas2.width, canvas2.height);
+        setSelectPoint();
+        props.setSelect({ sX: 0, sY: 0, eX: 0, eY: 0 });
       }
     }
     canvas2.addEventListener("click", onClick);
@@ -917,6 +981,7 @@ const Canvas = (props) => {
       context.putImageData(imageData, e.offsetX, e.offsetY);
       props.setCcp(ccp=>({...ccp, paste: 0}))
       context2.clearRect(0,0,canvas2.width, canvas2.height);
+      getCanvasScreenshot(canvas, cvsArr, setCvsArr, udCount, setUdCount);
     }
 
     canvas.addEventListener("click", onClick);
@@ -944,6 +1009,7 @@ const Canvas = (props) => {
     canvas = canvasRef.current;
     context = canvas.getContext("2d");
     context.clearRect(selectPoint.sX - 1, selectPoint.sY - 1, (selectPoint.eX - selectPoint.sX) + 2, (selectPoint.eY - selectPoint.sY) + 2);
+    getCanvasScreenshot(canvas, cvsArr, setCvsArr, udCount, setUdCount);
 
     props.setCcp(ccp => ({ ...ccp, cut: 0 }));
 
@@ -954,6 +1020,10 @@ const Canvas = (props) => {
   const [rotateAngle, setRotateAngle] = useState(0);
   //회전
   useEffect(() => {
+    if(!selectPoint){
+      props.setTrans({rotateL: 0 })
+      return;
+    }
     if (props.trans.rotateL !== 1) {
       return;
     }
@@ -995,6 +1065,7 @@ const Canvas = (props) => {
 
           let x = e.offsetX;
           let y = e.offsetY;
+          props.setCursor({x:x, y:y})
           setRotateAngle(Math.atan2(y - centerY, x - centerX) - clickAngle)
 
           //select box 중심 축으로 이동
@@ -1052,6 +1123,7 @@ const Canvas = (props) => {
     var img = new Image();
     img.onload = function () {
       context.drawImage(img, 0, 0, canvas.width, canvas.height)
+      getCanvasScreenshot( canvas, cvsArr, setCvsArr, udCount, setUdCount); 
     }
     img.src = URL.createObjectURL(blob);
   };
@@ -1063,6 +1135,7 @@ const Canvas = (props) => {
 
     context.clearRect(0, 0, canvas.width, canvas.height);
     canvas.renderImage(e.target.files[0], context, canvas);
+    e.target.value = null;
   }
 
 
@@ -1133,6 +1206,23 @@ const Canvas = (props) => {
       }
     }
   }, [selectPoint])
+
+
+  //마우스 위치 확인용2
+  useEffect(() => {
+    canvas = canvasRef.current;
+    context = canvas.getContext("2d");
+
+    const handleMousemove = (e)=>{
+      props.setCursor({ x: e.offsetX, y: e.offsetY });
+    }
+
+    canvas.addEventListener('mousemove', handleMousemove);
+    return () => {
+      canvas.removeEventListener('mousemove', handleMousemove);
+    }
+  }, [])
+
 
 
   // 영역 조정
@@ -1311,21 +1401,64 @@ const Canvas = (props) => {
     }
   }, [isClickPoint, pos, udCount])
 
+
+  const [zoom, setZoom] = useState(1);
   //확대축소
   useEffect(() => {
-    if(props.scale.in !== 1){
-      return;
+    if(props.scale.in === 1){
+      if(zoom === 8){
+        props.setScale(scale=>({ ...scale, in: 0 }));
+        return;
+      }
+      setZoom(zoom*2);
+      props.setScale(scale=>({ ...scale, in: 0 }));
     }
-      canvas = canvasRef.current;
-      context = canvas.getContext("2d");
+    else if(props.scale.out === 1){
+      if(zoom === 0.125){
+        props.setScale(scale=>({...scale, out: 0}));
+        return;
+      }
+      setZoom(zoom*0.5);
+      props.setScale(scale=>({...scale, out: 0}));
+    }
+    console.log(zoom);
+    props.setContent(zoom);
+  }, [props.scale])
 
-      // draw a simple rectangle, but scale it.
-      context.save();
-      context.scale(30, 30);
-      //context.fillRect(1, 10, 10, 10);
-      context.restore();
-      
-  }, [props.scale.in])
+
+  const canvasStyle= ()=>{
+    if(zoom!==1){
+      return{
+        transformOrigin: `top left`, 
+        transform: `scale(${zoom})`}
+    }
+  }
+
+  const canvas2Style = (props)=>{
+    if(zoom!==1){
+      return {
+        visibility: (props.ccp.copy === 1 || props.trans.rotateL === 1 || props.btnState.curve === 1 ) ? 'visible' : 'hidden', 
+        transformOrigin: `top left`,
+        transform: `scale(${zoom})`
+      }
+    }
+    else{
+      return { visibility: (props.ccp.copy === 1 || props.trans.rotateL === 1 || props.btnState.curve === 1 ) ? 'visible' : 'hidden'}
+    }
+  }
+
+  const canvas3Style = ()=>{
+    if(zoom!==1){
+      return {
+        visibility: isClickPoint === true ? 'visible' : 'hidden', 
+        transformOrigin: `top left`,
+        transform: `scale(${zoom})`
+      }
+    }
+    else{
+      return {visibility: isClickPoint === true ? 'visible' : 'hidden'}
+    } 
+  }
 
 
   return (
@@ -1334,9 +1467,12 @@ const Canvas = (props) => {
         <input ref={fileInputRef} type="file" accept="image" onChange={onChangeOpenFile} hidden/>
       </div>
       {/* canvas 요소에 접근할 수 있도록 Ref 걸기  */}
-      <canvas ref={canvasRef} className="canvas-board" width="1100px" height="550px"></canvas>
-      <canvas style={{ visibility: (props.ccp.copy === 1 || props.trans.rotateL === 1 || props.btnState.curve === 1 ) ? 'visible' : 'hidden' }} ref={canvas2Ref} className="canvas-select" width="1100px" height="550px"></canvas>
-      <canvas style={{ visibility: isClickPoint === true ? 'visible' : 'hidden' }} ref={canvas3Ref} className="canvas-select2" width="1100px" height="550px"></canvas>
+      
+      <div className="canvas-div">
+        <canvas style={canvasStyle(props)} ref={canvasRef} className="canvas-board" width="1400px" height="750px"></canvas>
+        <canvas style={canvas2Style(props)} ref={canvas2Ref} className="canvas-select" width="1400px" height="750px"></canvas>
+        <canvas style={canvas3Style(props)} ref={canvas3Ref} className="canvas-select2" width="1400px" height="750px"></canvas>
+      </div>
     </div>
   )
 }
@@ -1352,12 +1488,25 @@ const StateBar = (props) => {
   }
 
   return(
-    <div>
-      <span>커서 좌표</span><span></span><br/>
-      <span>선택 영역</span><span></span><br/>
-      <span>컨텐츠 영역</span><span></span><br/>
-      <button onClick={onClickZoomIn}>확대</button>
-      <button onClick={onClickZoomOut}>축소</button>
+    <div className='stateBar-container'>
+      <div>
+        <span className='state-name'>확대/축소</span><br />
+        <button onClick={onClickZoomIn}>확대</button>
+        <button onClick={onClickZoomOut}>축소</button>
+      </div>
+      <div>
+        <span className='state-name'>커서 좌표</span><br />
+        <span>x: {props.cursor.x}, y: {props.cursor.y}</span><br/>
+      </div>
+      <div>
+        <span className='state-name'>선택 영역</span><br />
+        <span>[start]  x: {props.select.sX}, y: {props.select.sY}</span><br/>
+        <span>[end]  x: {props.select.eX}, y:{props.select.eY}</span>
+      </div>
+      <div>
+        <span className='state-name'>컨텐츠 영역</span><br />
+        <span>{props.content*100} %</span><br/>
+      </div>
     </div>
   )
 }
@@ -1371,52 +1520,71 @@ const App = () => {
   const [btnState, setBtnState] = useState({ line: 0, curve: 0, ellipse: 0, rect: 0, polygon: 0, eraser: 0, paint: 0, select: 0, brush: 0 })
   const [ccp, setCcp] = useState({ copy: 0, paste: 0, cut: 0 })
   const [fillColor, setFillColor] = useState('#000000')
-  const [trans, setTrans] = useState({ rotateR: 0, rotateL: 0, scale: 0, })
+  const [trans, setTrans] = useState({ rotateL: 0})
   const [f, setF] = useState({ newFile: 0, saveFile: 0, openFile: 0 })
   const [undo, setUndo] = useState(0);
   const [redo, setRedo] = useState(0);
   const [scale, setScale] = useState({ in: 0, out: 0 })
+  const [cursor, setCursor] = useState({x: 0, y: 0});
+  const [select, setSelect] = useState({ sX: 0, sY: 0, eX: 0, eY: 0 });
+  const [content, setContent] = useState(1);
+
 
   return (
     <div className='container'>
-      <h1>Canvas</h1>
-      <Menu
-        strokeColor={strokeColor}
-        setStrokeColor={setStrokeColor}
-        setStrokeLineWidth={setStrokeLineWidth}
-        setBtnState={setBtnState}
-        setFillColor={setFillColor}
-        setCcp={setCcp}
-        ccp={ccp}
-        setTrans={setTrans}
-        setF={setF}
-        setUndo={setUndo}
-        setRedo={setRedo}
-      />
-      <Canvas
-        strokeColor={strokeColor}
-        setStrokeColor={setStrokeColor}
-        strokeLineWidth={strokeLineWidth}
-        setStrokeLineWidth={setStrokeLineWidth}
-        btnState={btnState}
-        setBtnState={setBtnState}
-        fillColor={fillColor}
-        setFillColor={setFillColor}
-        setCcp={setCcp}
-        ccp={ccp}
-        setTrans={setTrans}
-        trans={trans}
-        setF={setF}
-        f={f}
-        undo={undo}
-        setUndo={setUndo}
-        redo={redo}
-        setRedo={setRedo}
-        setScale={setScale}
-        scale={scale}
-      />
-      <StateBar
-        setScale={setScale}/>
+      <div className="first"><div className="bar"></div></div>
+      <div className="item">
+        <h1>Canvas</h1>
+        <Menu
+          strokeColor={strokeColor}
+          setStrokeColor={setStrokeColor}
+          setStrokeLineWidth={setStrokeLineWidth}
+          setBtnState={setBtnState}
+          setFillColor={setFillColor}
+          setCcp={setCcp}
+          ccp={ccp}
+          setTrans={setTrans}
+          setF={setF}
+          setUndo={setUndo}
+          setRedo={setRedo}
+        />
+      </div>
+      <div className="item">
+        <StateBar
+          setScale={setScale}
+          setCursor={setCursor}
+          cursor={cursor}
+          select={select}
+          content={content}
+        />
+      </div>
+      <div className="item">
+        <Canvas
+          strokeColor={strokeColor}
+          setStrokeColor={setStrokeColor}
+          strokeLineWidth={strokeLineWidth}
+          setStrokeLineWidth={setStrokeLineWidth}
+          btnState={btnState}
+          setBtnState={setBtnState}
+          fillColor={fillColor}
+          setFillColor={setFillColor}
+          setCcp={setCcp}
+          ccp={ccp}
+          setTrans={setTrans}
+          trans={trans}
+          setF={setF}
+          f={f}
+          undo={undo}
+          setUndo={setUndo}
+          redo={redo}
+          setRedo={setRedo}
+          setScale={setScale}
+          scale={scale}
+          setCursor={setCursor}
+          setSelect={setSelect}
+          setContent={setContent}
+        />
+      </div>
     </div>
   )
 }
