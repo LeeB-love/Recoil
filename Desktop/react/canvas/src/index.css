@@ -29,6 +29,28 @@ code {
   display: inline-block;
   text-align: center;
   position: relative;
+  overflow: auto;
+}
+
+/* contatiner-canvas가 select 되었을 때 */
+.container-canvas.select .canvas-div2{
+  z-index: 1;
+}
+
+.container-canvas.drag .canvas-div3{
+  z-index: 2;
+}
+
+.canvas-div2{
+  top: 0;
+  position: absolute;
+  z-index: -1;
+}
+
+.canvas-div3{
+  top: 0;
+  position: absolute;
+  z-index: -1;
 }
 
 .canvas-board{
@@ -39,9 +61,8 @@ code {
 .canvas-select{
   border: 1px dashed gray;
   cursor: crosshair;
-  background-color: rgb(143, 168, 250);
+  /* background-color: rgb(143, 168, 250); */
   opacity: 35%;
-  position: absolute;
   left:0px;
 }
 
@@ -49,9 +70,8 @@ code {
   border: 1px dashed gray;
   cursor: crosshair;
   /* visibility: hidden; */
-  /* background-color: rgb(248, 250, 163); */
+  /* background-color: rgb(248, 250, 163);  */
   opacity: 35%;
-  position: absolute;
   left:0px;
 }
 
@@ -142,7 +162,3 @@ h1{
   font-weight: bold;
 }
 
-
-.canvas-div{
-  overflow: auto;
-}

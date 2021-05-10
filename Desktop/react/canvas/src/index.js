@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import canvasToImage from 'canvas-to-image';
 import ReactDOM from 'react-dom';
-import { Brush, Slash, EraserFill, Circle, Square, Heptagon, BoundingBoxCircles, Clipboard, Scissors, Bezier, ArrowRepeat, ArrowsAngleExpand, ArrowsAngleContract} from 'react-bootstrap-icons';
+import { Brush, Slash, EraserFill, Circle, Square, Heptagon, BoundingBoxCircles, Clipboard, Scissors, Bezier, ArrowRepeat, } from 'react-bootstrap-icons';
 import './index.css';
 
 const Menu = (props) => {
@@ -212,7 +212,7 @@ const Canvas = (props) => {
     }
     else if(e.code === "Escape") {
       e.preventDefault();
-      props.setBtnState({ line: 0, curve: 0, ellipse: 0, rect: 0, polygon: 0, eraser: 0, paint: 0, brush: 0 })
+      props.setBtnState({ line: 0, curve: 0, ellipse: 0, rect: 0, polygon: 0, eraser: 0, brush: 0, paint: 0 })
       props.setCcp({ copy: 0, paste: 0, cut: 0 })
       props.setTrans({ rotateL: 0})
       setEsc(1);
@@ -294,7 +294,7 @@ const Canvas = (props) => {
     context.clearRect(0, 0, canvas.width, canvas.height);
     props.setStrokeColor("#000000")
     props.setStrokeLineWidth(1);
-    props.setBtnState({ line: 0, curve: 0, ellipse: 0, rect: 0, polygon: 0, eraser: 0, paint: 0, select: 0, brush: 0 })
+    props.setBtnState({ line: 0, curve: 0, ellipse: 0, rect: 0, polygon: 0, eraser: 0, brush: 0, paint: 0 })
     props.setFillColor('#000000')
     props.setTrans({ rotateL: 0})
     props.setCcp({ copy: 0, paste: 0, cut: 0 })
@@ -326,8 +326,9 @@ const Canvas = (props) => {
     if (props.btnState.brush !== 1) {
       return;
     }
-    if (props.btnState.eraser === 1) {
-      props.setBtnState(btnState => ({ ...btnState, eraser: 0 }))
+    if (props.btnState.eraser === 1 || props.btnState.polygon === 1 || props.btnState.curve === 1 || props.btnState.ellipse ===1||
+        props.btnState.line === 1 || props.btnState.rect === 1) {
+      props.setBtnState(btnState=>({...btnState, line: 0, curve: 0, ellipse: 0, rect: 0, polygon: 0, eraser: 0}))
     }
     if(props.ccp.copy === 1){
       props.setCcp({copy: 0, paste: 0, cut: 0})
@@ -337,7 +338,6 @@ const Canvas = (props) => {
       setSelectPoint();
       props.setSelect({ sX: 0, sY: 0, eX: 0, eY: 0 });
     }
-
 
     //canvas 요소에 접근해서 참조값 가져오기
     canvas = canvasRef.current;
@@ -394,11 +394,9 @@ const Canvas = (props) => {
     if (props.btnState.line !== 1) {
       return;
     }
-    if (props.btnState.brush === 1) {
-      props.setBtnState(btnState => ({ ...btnState, brush: 0 }))
-    }
-    if (props.btnState.eraser === 1) {
-      props.setBtnState(btnState => ({ ...btnState, eraser: 0 }))
+    if (props.btnState.brush === 1 ||props.btnState.eraser === 1 || props.btnState.polygon === 1 || props.btnState.curve === 1 || props.btnState.ellipse ===1||
+      props.btnState.rect === 1) {
+    props.setBtnState(btnState=>({...btnState, curve: 0, ellipse: 0, rect: 0, polygon: 0, eraser: 0, brush: 0}))
     }
     if(props.ccp.copy === 1){
       props.setCcp({copy: 0, paste: 0, cut: 0})
@@ -408,7 +406,6 @@ const Canvas = (props) => {
       setSelectPoint();
       props.setSelect({ sX: 0, sY: 0, eX: 0, eY: 0 });
     }
-
 
     //canvas 요소에 접근해서 참조값 가져오기
     canvas = canvasRef.current;
@@ -453,18 +450,14 @@ const Canvas = (props) => {
     if (props.btnState.curve !== 1) {
       return;
     }
-    if (props.btnState.brush === 1) {
-      props.setBtnState(btnState => ({ ...btnState, brush: 0 }))
-    }
-    if (props.btnState.eraser === 1) {
-      props.setBtnState(btnState => ({ ...btnState, eraser: 0 }))
+    if (props.btnState.brush === 1 ||props.btnState.eraser === 1 || props.btnState.polygon === 1 || props.btnState.ellipse ===1||props.btnState.rect === 1) {
+    props.setBtnState(btnState=>({...btnState, line: 0, ellipse: 0, rect: 0, polygon: 0, eraser: 0, brush: 0}))
     }
     if(props.ccp.copy === 1){
       props.setCcp({copy: 0, paste: 0, cut: 0})
       setSelectPoint();
       props.setSelect({ sX: 0, sY: 0, eX: 0, eY: 0 });
     }
-
 
     canvas = canvasRef.current;
     context = canvas.getContext("2d");
@@ -548,11 +541,9 @@ const Canvas = (props) => {
     if (props.btnState.ellipse !== 1) {
       return;
     }
-    if (props.btnState.brush === 1) {
-      props.setBtnState(btnState => ({ ...btnState, brush: 0 }))
-    }
-    if (props.btnState.eraser === 1) {
-      props.setBtnState(btnState => ({ ...btnState, eraser: 0 }))
+    if (props.btnState.brush === 1 ||props.btnState.eraser === 1 || props.btnState.polygon === 1 || props.btnState.curve === 1 ||
+      props.btnState.rect === 1) {
+    props.setBtnState(btnState=>({...btnState, line: 0, curve: 0, rect: 0, polygon: 0, eraser: 0, brush: 0}))
     }
     if(props.ccp.copy === 1){
       props.setCcp({copy: 0, paste: 0, cut: 0})
@@ -562,7 +553,6 @@ const Canvas = (props) => {
       setSelectPoint();
       props.setSelect({ sX: 0, sY: 0, eX: 0, eY: 0 });
     }
-
 
     canvas = canvasRef.current;
     context = canvas.getContext("2d");
@@ -637,11 +627,8 @@ const Canvas = (props) => {
     if (props.btnState.rect !== 1) {
       return;
     }
-    if (props.btnState.brush === 1) {
-      props.setBtnState(btnState => ({ ...btnState, brush: 0 }))
-    }
-    if (props.btnState.eraser === 1) {
-      props.setBtnState(btnState => ({ ...btnState, eraser: 0 }))
+    if (props.btnState.brush === 1 ||props.btnState.eraser === 1 || props.btnState.polygon === 1 || props.btnState.curve === 1 || props.btnState.ellipse ===1) {
+    props.setBtnState(btnState=>({...btnState, line: 0, curve: 0, ellipse: 0, polygon: 0, eraser: 0, brush: 0}))
     }
     if(props.ccp.copy === 1){
       props.setCcp({copy: 0, paste: 0, cut: 0})
@@ -717,11 +704,9 @@ const Canvas = (props) => {
     if (props.btnState.polygon !== 1) {
       return;
     }
-    if (props.btnState.brush === 1) {
-      props.setBtnState(btnState => ({ ...btnState, brush: 0 }))
-    }
-    if (props.btnState.eraser === 1) {
-      props.setBtnState(btnState => ({ ...btnState, eraser: 0 }))
+    if (props.btnState.brush === 1 ||props.btnState.eraser === 1 || props.btnState.curve === 1 || props.btnState.ellipse ===1||
+      props.btnState.rect === 1) {
+    props.setBtnState(btnState=>({...btnState, line: 0, curve: 0, ellipse: 0, rect: 0, eraser: 0, brush: 0}))
     }
     if(props.ccp.copy === 1){
       props.setCcp({copy: 0, paste: 0, cut: 0})
@@ -792,8 +777,9 @@ const Canvas = (props) => {
     if (props.btnState.eraser !== 1) {
       return;
     }
-    if (props.btnState.brush === 1) {
-      props.setBtnState(btnState => ({ ...btnState, brush: 0 }))
+    if (props.btnState.brush === 1 || props.btnState.polygon === 1 || props.btnState.curve === 1 || props.btnState.ellipse ===1||
+      props.btnState.rect === 1) {
+    props.setBtnState(btnState=>({...btnState, line: 0, curve: 0, ellipse: 0, rect: 0, polygon: 0,brush: 0}))
     }
     if(props.ccp.copy === 1){
       props.setCcp({copy: 0, paste: 0, cut: 0})
@@ -1292,28 +1278,21 @@ const Canvas = (props) => {
       }
 
       const onMouseup = (e) => {
-        // let sX2 = selectPoint2.sX;
-        // let sY2 = selectPoint2.sY;
-        // let eX2 = selectPoint2.eX;
-        // let eY2 = selectPoint2.eY;
         context3.clearRect(0, 0, canvas2.width, canvas2.height);
 
         isMouseDown = false;
         setIsClickPoint(false);
 
-        // let image = new Image();
-        // image.src = canvas.toDataURL();
-        //result canvas에 drawImage - 조정한 영역만큼
         //조정한 만큼 imageData로 저장
         if (sX !== eX && sY !== eY) {
           //선택영역 이미지 데이터 저장
           imageData = context.getImageData(sX, sY, eX - sX, eY - sY);
         }
         context2.clearRect(0, 0, canvas2.width, canvas2.height);
-        // context2.strokeRect(sX, sY, eX-sX, eY-sY);
+
         let x = e.offsetX;
         let y = e.offsetY;
-        // context3.lineWidth = 0.5;
+
         if (pos == "top-middle") {
           setSelectPoint(selectPoint => ({ ...selectPoint, sY: y }));
           context2.strokeRect(sX, y, eX - sX, eY - y);
@@ -1434,7 +1413,7 @@ const Canvas = (props) => {
     }
   }
 
-  const canvas2Style = (props)=>{
+  const canvas2Style = ()=>{
     if(zoom!==1){
       return {
         visibility: (props.ccp.copy === 1 || props.trans.rotateL === 1 || props.btnState.curve === 1 ) ? 'visible' : 'hidden', 
@@ -1443,7 +1422,9 @@ const Canvas = (props) => {
       }
     }
     else{
-      return { visibility: (props.ccp.copy === 1 || props.trans.rotateL === 1 || props.btnState.curve === 1 ) ? 'visible' : 'hidden'}
+      return{
+        visibility: (props.ccp.copy === 1 || props.trans.rotateL === 1 || props.btnState.curve === 1 ) ? 'visible' : 'hidden'
+      }
     }
   }
 
@@ -1456,13 +1437,17 @@ const Canvas = (props) => {
       }
     }
     else{
-      return {visibility: isClickPoint === true ? 'visible' : 'hidden'}
-    } 
+      return{
+        visibility: isClickPoint === true ? 'visible' : 'hidden'
+      }
+    }
   }
 
+  const select = ((props.ccp.copy === 1 || props.trans.rotateL === 1 || props.btnState.curve === 1 ) ? "select" : "")
+  const drag = (isClickPoint ? "drag" : "")
 
   return (
-    <div className="container-canvas">
+    <div className={"container-canvas " + select + ' ' + drag}>
       <div>
         <input ref={fileInputRef} type="file" accept="image" onChange={onChangeOpenFile} hidden/>
       </div>
@@ -1470,8 +1455,12 @@ const Canvas = (props) => {
       
       <div className="canvas-div">
         <canvas style={canvasStyle(props)} ref={canvasRef} className="canvas-board" width="1400px" height="750px"></canvas>
+      </div>
+      <div className="canvas-div2">
         <canvas style={canvas2Style(props)} ref={canvas2Ref} className="canvas-select" width="1400px" height="750px"></canvas>
-        <canvas style={canvas3Style(props)} ref={canvas3Ref} className="canvas-select2" width="1400px" height="750px"></canvas>
+      </div>
+      <div className="canvas-div3">
+        <canvas style={canvas3Style()} ref={canvas3Ref} className="canvas-select2" width="1400px" height="750px"></canvas>
       </div>
     </div>
   )
@@ -1517,7 +1506,7 @@ const App = () => {
 
   const [strokeColor, setStrokeColor] = useState('#000000');
   const [strokeLineWidth, setStrokeLineWidth] = useState(1);
-  const [btnState, setBtnState] = useState({ line: 0, curve: 0, ellipse: 0, rect: 0, polygon: 0, eraser: 0, paint: 0, select: 0, brush: 0 })
+  const [btnState, setBtnState] = useState({ line: 0, curve: 0, ellipse: 0, rect: 0, polygon: 0, eraser: 0, brush: 0, paint: 0 })
   const [ccp, setCcp] = useState({ copy: 0, paste: 0, cut: 0 })
   const [fillColor, setFillColor] = useState('#000000')
   const [trans, setTrans] = useState({ rotateL: 0})
