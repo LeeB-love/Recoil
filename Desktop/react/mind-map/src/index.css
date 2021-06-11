@@ -58,3 +58,16 @@ h1{
   height: 8%;
   position: fixed;
 }
+
+input{
+  background-color: transparent;
+  border: none;
+  color: transparent;
+  float: none;
+  caret-color: black;
+  font-size: 16px;
+}
+
+/* input:focus{
+  outline: none;
+} */

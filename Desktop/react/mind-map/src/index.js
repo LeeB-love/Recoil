@@ -1,38 +1,22 @@
 import React, {useState, useEffect} from 'react';
 import { RecoilRoot, atom, selector, useRecoilState, useRecoilValue, } from 'recoil';
-import roundedRectangle from 'canvas-rounded-rectangle';
+
 import ReactDOM from 'react-dom';
 import cloneDeep from 'lodash/cloneDeep';
 import './index.css';
-import { create } from 'lodash';
 // import App from './App';
 
 
-let nodeNum = 0;
 
-const rectStyle = (x, y, width, height, strokeColor, fillColor, radius)=> {
-  if(typeof radius === 'undefined'){
-    radius = 10
-  }
-  
-  return({
-    top: x,
-    left: y,
-    width: width,
-    height: height,
-    stroke: strokeColor,
-    fill: fillColor,
-    borderRadius: radius,
-    strokeWidth: 10,
-    hover: {
-        stroke: '#ff3333'
-    }
-  })
-}
+let nodeNum = 0;
+let last = Date.now();
+
 
 const Canvas = ()=>{
 
   let canvasRef = React.createRef();
+  let spanRef = React.createRef();
+  let inputRef = React.createRef();
   let canvas;
   let ctx;
 
@@ -40,12 +24,15 @@ const Canvas = ()=>{
   const [node, setNode] = useRecoilState(nodeState);
   const [text, setText] = useRecoilState(textState);
   const [actNode, setActNode] = useRecoilState(activeNode);
+  const [input, setInput] = useRecoilState(inputState);
+  const [enterCnt, setEnterCnt] = useState();
 
 
   //텍스트 작성
   const drawText = (ctx, msg, x, y, font, color)=>{
+    ctx.globalCompositeOperation = 'source-over';
     ctx.shadowColor = "transparent"
-    ctx.font = '30px serif'
+    ctx.font = '16px Arial sans-serif'
     ctx.fillText(msg, x+20, y+47);
   }
  
@@ -75,37 +62,6 @@ const Canvas = ()=>{
 
 
 
-  // //새로 생성된 노드의 관련 부모노드의 bbox를 업데이트 해줌
-  // const updateBbox = (pN, x, y, arr)=>{
-  //   // console.log("updateBbox");
-  //   if(pN === 0){
-  //     return arr;
-  //   }
-
-  //   //ID가 m인 인덱스 (부모노드 찾기)
-  //   const index = arr.findIndex(obj => obj.num === pN);
-  //   //node[index]의 bbox 수정
-  //   // 1) x, y 둘 다 부모노드 bbox 보다 크거나 같을 때
-  //   if(x+200>=arr[index].bbox.x2 && y+70>=arr[index].bbox.y2){
-  //     arr[index].bbox = {...arr[index].bbox, x2: x+200, y2: y+70}
-  //   }
-
-  //   // 2) x만 부모노드 bbox보다 클 때
-  //   else if(x+200>=arr[index].bbox.x2 && y+70<=arr[index].bbox.y2){
-  //     arr[index].bbox = {...arr[index].bbox, x2: x+200}
-  //   }
-
-  //   // 3) y만 부모노드 bbox 보다 클 때
-  //   else if(x+200<=arr[index].bbox.x2 && y+70>=arr[index].bbox.y2){
-  //     arr[index].bbox = {...arr[index].bbox, y2: y+70}
-  //   }
-
-  //   const pN2 = arr[index].E[0];
-  //   return updateBbox(pN2, x, y, arr);
-  // }
-
-
-
   //노드 그리기
   const createNode = (ctx, x, y, pN)=>{
     // node ID
@@ -118,9 +74,7 @@ const Canvas = ()=>{
 
     //도형 생성
     let firstNode = drawRoundRect(ctx, x, y, 200, 70, '#B6E3E9');
-    // let rect = rectStyle(x, y, 200, 70, '#B6E3E9', '#B6E3E9', 40);
-    // let firstNode = roundedRectangle(rect);
-    // ctx.fillColor = rect.fill;
+   
 
     let createdNode = {
       num: nodeNum, 
@@ -133,9 +87,8 @@ const Canvas = ()=>{
     let arr = cloneDeep(node);
     arr.push(createdNode);
     arr = updateBbox(arr, arr[0]);
-    // console.log("tmp : ", tmp);
-    // updatedNode = [...tmp, createdNode] 
 
+    // updatedNode = [...tmp, createdNode] 
 
     // setNode(old =>{
     //   let tmp = old.map(el => (el.num === pN ? {...el, bbox: {...el.bbox, x2: x+200, y2: y+70 }} : el));
@@ -145,11 +98,7 @@ const Canvas = ()=>{
     ctx.globalCompositeOperation = 'destination-over'
     
     ctx.font = '30px serif'
-    ctx.fillText('new', x+20, y+47);
-    
     ctx.stroke(firstNode);
-
-    console.log("updatedNode : ", arr);
 
     return arr;
   }
@@ -188,15 +137,53 @@ const Canvas = ()=>{
     }
   }
 
+  const [txt, setTxt] = useState();
+  const createInput = (t, l, w, node)=>{
+
+    const inputStyle = {
+      position: "absolute",
+      top: t+25,
+      left: l+18,
+      width: w
+    }
+
+    return(
+      <div>
+        <input type="text" style={inputStyle} ref={inputRef} onChange={e=>{
+            setTxt(e.target.value);
+            }} 
+            onKeyDown={e=>{
+              if(e.key === 'Tab'){
+                e.preventDefault();
+                // e.stopPropagation();
+              }
+            }}
+            value={node ? node.text : undefined} 
+            autoFocus/>
+      </div>
+    )
+  }
+
+
+
   //노드 활성화
-  const changeNodeToAct = (ctx, node)=>{
+  const changeNodeToAct = (ctx, node, index)=>{
+
+    //actNode ID 설정
     setActNode(node.num);
+    setEnterCnt(1);
+
+    //선택된 노드에 input 삽입
+    const textInput = createInput(node.location.y, node.location.x, node.location.width-53, node);
+    setInput({box : textInput});
+    
     ctx.clearRect(node.location.x, node.location.y, node.location.width, node.location.height);
     
-    //====(임시) bbox 영역 확인용
+    //====(임시) bbox 영역 확인용 ========
     ctx.lineWidth = 2;
     ctx.strokeStyle = "#F781F3"
     ctx.strokeRect(node.bbox.x1, node.bbox.y1, node.bbox.x2-node.bbox.x1, node.bbox.y2-node.bbox.y1);
+    //=====================================
 
     let path = node.path;
     ctx.globalCompositeOperation = 'source-over';
@@ -207,38 +194,172 @@ const Canvas = ()=>{
     ctx.strokeStyle = "#FADEE1"
     //그리기
     ctx.stroke(path);
+    
+    if(typeof node.text !== 'undefined'){
+      drawText(ctx, node.text,node.location.x, node.location.y-5);
+    }
+    
   }
 
+  // actNode 지정된 상태에서 enter 치면 들어오는 곳 ==> 왜 두 번 들어옴?
+  // #### 아무것도 안쓰고 enter 치면 undefined 들어오는거 고치기
+  // const changeNodeToAct2 = (ctx)=>{
+  //   let nodeArr = cloneDeep(node);
+  //   console.log(nodeArr);
+
+  //   //actNode 찾아내서
+  //   const index = nodeArr.findIndex(obj => obj.num === actNode);
+  //   let actN = nodeArr[index];
+
+  //   // txt 길이가 node 넓이보다 클 때,
+  //   if(txtWidth>=actN.location.width-53){
+  //     console.log("텍스트 길이가 노드 넓이보다 큼", txtWidth, actN.location.width);
+
+  //     //텍스트 길이가 노드 넓이보다 크면, 기존 도형을 지운다.
+  //     ctx.clearRect(actN.location.x, actN.location.y, actN.location.width, actN.location.height);
+
+  //     // 텍스트 길이에 맞춰 새 도형 그리기
+  //     let newNode = drawRoundRect(ctx, actN.location.x, actN.location.y, txtWidth+53, actN.location.height, '#FADEE1');
+  //     ctx.stroke(newNode);
+
+  //     // 기존 도형이 저장되어 있던 node에서 기존도형을 지우고 새 도형으로 업데이트 시킨다.
+  //     actN.location.width = txtWidth+53; 
+  //     actN.path = newNode;
+  //     actN.bbox.x1 = actN.location.x;
+  //     actN.bbox.y1 = actN.location.y;
+  //     actN.bbox.x2 = actN.location.x+txtWidth+53;
+  //     actN.bbox.y2 = actN.location.y+actN.location.height;
+  //     console.log(actN.bbox);
+      
+  //     //다시 썼을 때 위치조정
+  //     nodeArr = updateBbox2(nodeArr, actN);
+  //     nodeArr = redrawNodes(ctx, nodeArr);
+  //     /*
+  //       텍스트 추가한 노드도 바운딩 박스 업데이트,
+  //       연결되어있는 다른 노드들도 바운딩 박스 업데이트 => updateBbox(nodeArr, node, exnodeNum, exnodeBbox, distanceMoved)
+  //       그 뒤에 다 지우고 처음부터 새로 그리기 => redrawNodes(ctx, nodeArr)
+      
+  //     */
+  //   }
+
+  //   //txt 길이가 node 넓이보다 작을 때,
+  //   if(txtWidth <= actN.location.width-53){
+  //     console.log("텍스트 길이가 노드 넓이보다 작음", txtWidth, actN.location.width);
+
+  //      //텍스트 길이가 노드 넓이보다 작으면, 기존 도형을 지운다.
+  //      console.log("actN.location.x, actN.location.y, actN.location.width, actN.location.height", actN.location.x, actN.location.y, actN.location.width, actN.location.height)
+  //      ctx.clearRect(actN.location.x, actN.location.y, actN.location.width, actN.location.height);
+
+  //      // 텍스트 길이에 맞춰 새 도형 그리기
+  //      let newNode = drawRoundRect(ctx, actN.location.x, actN.location.y, txtWidth+53, actN.location.height, '#FADEE1');
+  //      ctx.stroke(newNode);
+ 
+  //      // 기존 도형이 저장되어 있던 node에서 기존도형을 지우고 새 도형으로 업데이트 시킨다.
+  //      actN.location.width = txtWidth+53; 
+  //      actN.path = newNode;
+  //      actN.bbox.x1 = actN.location.x;
+  //      actN.bbox.y1 = actN.location.y;
+  //      actN.bbox.x2 = actN.location.x+txtWidth+53;
+  //      actN.bbox.y2 = actN.location.y+actN.location.height;
+
+  //      nodeArr = updateBbox2(nodeArr, actN);
+  //      nodeArr = redrawNodes(ctx, nodeArr);
+  //   }
+
+  //   //drawText하기
+  //   //drawText(ctx, txt, nodeArr[index].location.x, nodeArr[index].location.y-5);
+    
+  //   //node 정보 업데이트
+
+  //   //nodeArr[index].text = txt;
+  //   setNode(nodeArr);
+  //   setEnterCnt(1);
+  // }
+
+
+   // 바운딩 박스 업데이트 시키기 (x 축) => nodeArr : 변경시킬 노드들, node : 현재 걸려있는 노드, exnodeEX : 이전 노드의 X좌표 끝 지점.
+   const updateBbox2 = (nodeArr, node)=>{
+
+    // 한 번 체킹된 노드 다시 체크하지 않도록 true로 변경
+    node.check = true;
+    let nodeEndX = node.location.x + node.location.width;
+    
+    //자식 노드 검색
+    const foundChildN = nodeArr.find(obj => (obj.E[0] === node.num) && (obj.check !== true));
+    // 자식 노드가 있나?
+    if(foundChildN){
+      //자식 노드의 location을 현재 노드의 node의 x축 끝지점 보다 200만큼 더 떨어져있게 설정한다.
+      foundChildN.location.x = nodeEndX + 100;
+      // bbox 재설정
+      foundChildN.bbox.x1 = nodeEndX + 100;
+      foundChildN.bbox.x2 = nodeEndX + 100 + foundChildN.location.width;
+
+      //자식노드로 이동
+      return updateBbox2(nodeArr, foundChildN)
+    }
+
+    // 없으면 더 이상 내려갈 곳이 없으니 부모 노드로 올라가기
+    else{
+      //부모노드 찾기
+      const foundParentsN = nodeArr.find(obj => (obj.num === node.E[0]));
+
+      if(foundParentsN){
+        //부모노드의 bbox 조정
+        if(foundParentsN.bbox.x2<=node.bbox.x2){
+          foundParentsN.bbox.x2 = node.bbox.x2;
+        }     
+      
+        //올라가기
+        foundParentsN.check = false;
+        return updateBbox2(nodeArr, foundParentsN);
+      }
+      else{ // 없으면 최초노드임
+        let arr = nodeArr.map(obj => ({...obj , check : false}));
+        return arr;
+      }    
+    }
+  }
+
+
+  //노드 비활성화   ===> 텍스트가 들어갈 때 마다 노드 정보가 업데이트되는 것보다 비활성화 되는 시점에 업데이트하는 것이 낫겠어요....
   const changeNodeToInact = (ctx, node)=>{
     ctx.clearRect(node.location.x, node.location.y, node.location.width, node.location.height);
     let path = node.path;
     ctx.lineWidth = node.location.height-1;
     ctx.strokeStyle = '#B6E3E9';
     ctx.stroke(path);
-    drawText(ctx, text.msg, node.location.x, node.location.y);
+    if(typeof node.text !== 'undefined'){
+      drawText(ctx, node.text, node.location.x, node.location.y-5);
+    }
     setActNode(0);
+
+    setInput({box:null})
   }
 
 
 
-  //대충 캔버스 상에서 마우스 움직일 때 벌어지는 일들...
-  const handleMouseMove = (e)=>{
-    let x = e.offsetX;
-    let y = e.offsetY;
+  // //대충 캔버스 상에서 마우스 움직일 때 벌어지는 일들...
+  // const handleMouseMove = (e)=>{
+  //   let x = e.offsetX;
+  //   let y = e.offsetY;
     
-    //커서가 올려진 노드
-    let node = searchNodeLoca(x, y);
-    setMPoint({x: x, y: y, node: node});
-  }
+  //   //커서가 올려진 노드
+  //   let node = searchNodeLoca(x, y);
+  //   if(node){
+  //     setMPoint({x: x, y: y, node: node});
+  //   }
+  // }
 
 
-  const handleOnClick = ()=>{
- 
-    if(mPoint.node !== undefined){
+  const handleOnClick = (e)=>{
+    let node1 = searchNodeLoca(e.offsetX, e.offsetY);
+
+    if(node1 !== undefined){
       if(actNode !== 0){
         return;
       }
-      changeNodeToAct(ctx, mPoint.node);
+      changeNodeToAct(ctx, node1);
+      setEnterCnt(1);
     }
     else{
       if(actNode == 0){
@@ -250,51 +371,53 @@ const Canvas = ()=>{
   }
 
 
-  const handleKeyPress = (e)=>{
-    if(actNode !== 0){
-      const index = node.findIndex(obj => obj.num === actNode);
+  // const handleKeyPress = (e)=>{
+  //   if(actNode !== 0){
+  //     //선택되어있는 노드가 있으면, 뭐가 선택되어있는 것인지 node 배열에서 해당 노드를 찾아낸다. 텍스트의 길이가 
+  //     const index = node.findIndex(obj => obj.num === actNode);
 
-      if(text.width >= 135){
-        // 텍스트 길이가 140이 넘으면 기존 도형을 지우고
-        ctx.clearRect(node[index].location.x, node[index].location.y, node[index].location.width, node[index].location.height);    
+  //     if(text.width >= 135){
+  //       // 텍스트 길이가 140이 넘으면 기존 도형을 지우고
+  //       ctx.clearRect(node[index].location.x, node[index].location.y, node[index].location.width, node[index].location.height);    
 
-        // 새 도형을 그리기
-          let loca = node[index].location;
+  //       // 새 도형을 그리기
+  //         let loca = node[index].location;
 
-          let newNode = drawRoundRect(ctx, loca.x, loca.y, loca.width+(ctx.measureText(text.msg+e.key).width-text.width), 70, '#FADEE1')
-          // drawShadow(ctx, 5, 5, "#BDBDBD", 10);
-          ctx.stroke(newNode);
+  //         let newNode = drawRoundRect(ctx, loca.x, loca.y, loca.width+(ctx.measureText(text.msg+e.key).width-text.width), 70, '#FADEE1')
+  //         // drawShadow(ctx, 5, 5, "#BDBDBD", 10);
+  //         ctx.stroke(newNode);
           
 
-        // 기존 도형이 저장되어있던 node에서 기존 도형을 삭제하고 새 도형을 넣어서 업데이트.
+  //       // 기존 도형이 저장되어있던 node에서 기존 도형을 삭제하고 새 도형을 넣어서 업데이트.
         
-        const node1 = node.slice();
-        // node1[index].location.width = 100;
+  //       const node1 = node.slice();
+  //       // node1[index].location.width = 100;
 
-        if(node1.length == 1){
-          node1.pop();
-          node1.push({...node[index], path: newNode, location: {...node[index].location, width:node[index].location.width+(ctx.measureText(text.msg+e.key).width-text.width)}})
-        }
-        else{
-          node1.splice(index,1);
-          node1.push({...node[index], path: newNode, location: {...node[index].location, width:node[index].location.width+(ctx.measureText(text.msg+e.key).width-text.width)}})
+  //       if(node1.length == 1){
+  //         node1.pop();
+  //         node1.push({...node[index], path: newNode, location: {...node[index].location, width:node[index].location.width+(ctx.measureText(text.msg+e.key).width-text.width)}})
+  //       }
+  //       else{
+  //         node1.splice(index,1);
+  //         node1.push({...node[index], path: newNode, location: {...node[index].location, width:node[index].location.width+(ctx.measureText(text.msg+e.key).width-text.width)}})
 
-          // let a;
-          // let as = [1,2,3];
-          // as = [...as,4]; => [1,2,3,4]
-          // [a,...as] = as;
-        }
+  //         // let a;
+  //         // let as = [1,2,3];
+  //         // as = [...as,4]; => [1,2,3,4]
+  //         // [a,...as] = as;
+  //       }
         
         
-        setNode(node1);
-        setMPoint(mPoint=>({...mPoint, node: node[index]}))  
-      }
+  //       setNode(node1);
+  //       setMPoint(mPoint=>({...mPoint, node: node[index]}))  
+  //     }
 
       
-      drawText(ctx, text.msg+e.key, node[index].location.x, node[index].location.y)
-      setText(text=>({msg: text.msg+e.key, width: ctx.measureText(text.msg+e.key).width}));
-    }
-  }
+  //     drawText(ctx, text.msg+e.key, node[index].location.x, node[index].location.y)
+  //     setText(text=>({msg: text.msg+e.key, width: ctx.measureText(text.msg+e.key).width}));
+  //   }
+  // }
+
 
   //기준이 되는 도형(위치 px, py, pw, ph)과 w, h 만큼 떨어져있음
   const drawEdge = (ctx, px, py, pw, ph, w, h)=>{
@@ -325,76 +448,62 @@ const Canvas = ()=>{
     let ph = node[index].location.height;
 
 
-    //도형 만들고 => 만들 때
+    //도형
     let node1 = createNode(ctx, px+pw+w, py+h, node[index].num);
-    setNode(node1);
     //부모노드 비활성화
     changeNodeToInact(ctx, node[index]);
     //활성화된 노드 바꾸기
     changeNodeToAct(ctx, node1[node1.length-1]);
     //링크 그리기
     drawEdge(ctx, px, py, pw, ph, w, h);
+    console.log(node1[node1.length-1]);
+    setNode(node1);
   }
 
 
-  //노드 새로 생설될 때, 부모노드의 형제들 위치조정
-  const relocateSiblingNodes = (node1, pIndex)=>{
-    console.log("relocateSiblingNodes");
+  // 바운딩 박스 업데이트 시키기 (y 축)
+  const updateBbox = (nodeArr, node, exnodeNum, exnodeBbox, distanceMoved)=>{
+    console.log("updateBbox")
 
-    if(node1[pIndex].num === 0){
-      return node1;
-    }
-    
-    let cnt = 1;
-    
-    
-    for(let i=0; i<node1.length; i++){
-      //위치 조정이 필요한 형제 노드들 골라내기
-      if((node1[i].E[0] === node1[pIndex].E[0]) && (node1[i].E[1] > node1[pIndex].E[1])){
-        
-        // 위치 조정이 필요한 형제노드의 y값 조정
-        node1[i].location.y = node1[pIndex].bbox.y2 + 100*cnt;
-        
-        // 위치가 조정된 형제노드의 바운딩 박스 조정
-        let bboxHeight = node1[i].bbox.y2-node1[i].bbox.y1;
-        node1[i].bbox.y1 = node1[pIndex].bbox.y2 + 100*cnt;
-        //=======================bbox y2 좌표 고치기 지금 뭔가 이상함
-        node1[i].bbox.y2 = node1[pIndex].bbox.y2 + 100*cnt+bboxHeight;
-        
-        
-        cnt++;
-        console.log("cnt", cnt);
-      }
-    }
-    
-    //부모노드의 부모노드의 bbox만큼 clearRect
-    const gPIndex = node1.findIndex(obj => obj.num === node1[pIndex].E[0]);
-
-    
-    if(gPIndex >0){
-      return relocateSiblingNodes(node1, gPIndex)
-    }
-    else{
-      return node1;
-    }    
-  }
-
-
-  // 바운딩 박스 업데이트 시키기
-  const updateBbox = (nodeArr, node, exnodeBbox)=>{
-    console.log(node.num)
-    console.log("exnodeBbox",exnodeBbox)
-    
     node.check = true;
-    
     const foundChildN = nodeArr.find(obj => (obj.E[0] === node.num) && (obj.check !== true));
 
+    //자식노드 있으면 자식노드 쪽으로 가기
     if(foundChildN){
-      return updateBbox(nodeArr, foundChildN);
+
+      if(typeof distanceMoved !== 'undefined'){
+        foundChildN.location.y += distanceMoved;
+        foundChildN.bbox.y1 +=  distanceMoved;
+        foundChildN.bbox.y2 +=  distanceMoved;
+      }
+
+      const isFirstChildN = nodeArr.find(obj => (obj.E[0] === node.num) && (obj.check === true));
+      if(typeof exnodeBbox !== 'undefined'){
+        // 좌우로 움직이는건 조건에 걸리면 안됨. 상하로 찾는 것만 걸려야 함. => 첫째 빼기 
+        if((foundChildN.location.y < exnodeBbox.y2) && isFirstChildN){
+          // foundChildN이 자식노드 갖고 있는 애면 자식노드 전체 다... 옮겨줘야 합니다 ㅜㅠㅜ
+          let yDistance = exnodeBbox.y2 + 50-foundChildN.location.y
+          
+          foundChildN.location.y = exnodeBbox.y2 + 50;
+          foundChildN.bbox.y1 = exnodeBbox.y2 + 50;
+          foundChildN.bbox.y2 = exnodeBbox.y2 + 50 + foundChildN.location.height;
+          return updateBbox(nodeArr, foundChildN, node.num, node.bbox, yDistance)
+        }
+      }
+      
+      if(distanceMoved){
+        //야.. 본인이 움직여졌으면 움직인만큼 자슥한테 넘겨조라....
+        return updateBbox(nodeArr, foundChildN, node.num,  node.bbox, distanceMoved);
+      }
+      else{
+        //안움직였으면 말구
+        return updateBbox(nodeArr, foundChildN, node.num,  node.bbox);
+      } 
     }
 
     // 없으면 올라가기...... 올라갈 때 bbox 조정
     else{
+      // 부모노드 찾기
       const foundParentsN = nodeArr.find(obj => obj.num === node.E[0]);
       if(foundParentsN){
 
@@ -402,45 +511,61 @@ const Canvas = ()=>{
           foundParentsN.bbox.x2 =  node.bbox.x2;
           foundParentsN.bbox.y2 =  node.bbox.y2;
         }
-    
         // 2) x만 부모노드 bbox보다 클 때
         else if((foundParentsN.bbox.x2<= node.bbox.x2) && (foundParentsN.bbox.y2 >=  node.bbox.y2)){
           foundParentsN.bbox.x2 =  node.bbox.x2;
         }
-    
         // 3) y만 부모노드 bbox 보다 클 때
         else if((foundParentsN.bbox.x2>= node.bbox.x2) && (foundParentsN.bbox.y2 <=  node.bbox.y2)){
           foundParentsN.bbox.y2 =  node.bbox.y2;
         }
 
         foundParentsN.check = false;
-        return updateBbox(nodeArr, foundParentsN, node.bbox);
+        return updateBbox(nodeArr, foundParentsN, node.num, node.bbox);
       }
+
+      // 없으면 최초노드
       else{
         let arr = nodeArr.map(obj => ({...obj , check : false}));
         return arr;
       }
-    }  
+    }
   }
 
   
   //다 지우고 처음부터 새로 그리기
   const redrawNodes = (ctx, node)=>{
-    // console.log("redrawNodes node : ", node);
     //처음부터 끝까지 다 지우기
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-    // 노드 정보 토대로 다시 그리기
+    // 노드 정보 토대로 다시 그리기 => actNode면, 다르게 그릴 것
     for(let i=0; i<node.length; i++){
       //노드 그리고
-      // console.log(node[i]);
-      let updateNode = drawRoundRect(ctx, node[i].location.x, node[i].location.y, node[i].location.width, node[i].location.height, "#B6E3E9") 
-      node[i].path = updateNode;
-      ctx.stroke(updateNode);
-      
+      if(node[i].num === actNode){
+        let updateNode = drawRoundRect(ctx, node[i].location.x, node[i].location.y, node[i].location.width, node[i].location.height, '#FADEE1') 
+        node[i].path = updateNode;
+        ctx.stroke(updateNode);
+
+        // 텍스트 출력
+        if(typeof node[i].text !== 'undefined'){
+          drawText(ctx, node[i].text, node[i].location.x, node[i].location.y-5);
+        }
+      }
+      else{
+        let updateNode = drawRoundRect(ctx, node[i].location.x, node[i].location.y, node[i].location.width, node[i].location.height, '#B6E3E9') 
+        node[i].path = updateNode;
+        ctx.stroke(updateNode);
+
+        // 텍스트 출력
+        if(typeof node[i].text !== 'undefined'){
+          drawText(ctx, node[i].text, node[i].location.x, node[i].location.y-5);
+        }
+      }
+    
+    
       //이어져 있는 부모노드 확인
       const p = node.findIndex(obj => obj.num === node[i].E[0]);
-      // console.log("p", p);
+
       if(p !== -1 ){
         drawEdge(ctx, node[p].location.x, node[p].location.y, node[p].location.width, node[p].location.height, 100, node[i].location.y - node[p].location.y);
       }
@@ -451,17 +576,16 @@ const Canvas = ()=>{
 
 
   const createSiblingNode = (ctx, w, h)=>{
-    if(actNode === 0){
+    if(actNode === 1){
       return;
     }
 
-    //actNode의 형제니까.... 일단 활성화 되어있는 놈 부모를 찾아
     //actNode의 index
     const index = node.findIndex(obj => obj.num === actNode);
     //actNode의 부모 node index
     const pIndex = node.findIndex(obj => obj.num === node[index].E[0]);
     //자식노드 몇 개 딸려있는지 확인
-    const arr = node.filter(tmp => tmp.E[0] === node[pIndex].num);
+    //const arr = node.filter(tmp => tmp.E[0] === node[pIndex].num);
 
     //그리고 부모의 위치를 알아내
     let px = node[pIndex].location.x;
@@ -473,12 +597,9 @@ const Canvas = ()=>{
     //그 다음 새로운 노드를 만들기
     //도형 만들고
     let node1 = createNode(ctx, px+pw+w, sy+h, node[pIndex].num);
-    
-    //부모노드의 형제들 위치조정
-    // node1 = relocateSiblingNodes(node1, pIndex);
 
-    // //지우고 다시그리기
-    // node1 = redrawNodes(ctx, node1);
+    //위치 조정된거 있으면 지우고 다시그리기
+    node1 = redrawNodes(ctx, node1);
 
     setNode(node1);
 
@@ -486,20 +607,37 @@ const Canvas = ()=>{
     changeNodeToInact(ctx, node[index]);
     //활성화된 노드 바꾸기
     changeNodeToAct(ctx, node1[node1.length-1]);
-    //부모랑 새로운 노드를 이어주기
-    drawEdge(ctx, px, py, pw, ph, w, h*arr.length);
   }
 
+  
 
-  const handleKeyDown = (e)=>{
+  const handleKeyUp = (e)=>{
     e.preventDefault();
-    if(e.code == 'Tab'){
+  
+    if(e.key == 'Tab'){
       //자식 노드 만드는거(context, 부모노드로부터 x축으로 200만큼 떨어져있음, 부모노드로부터 y축으로 -20만큼 떨어져있음)
       createChildNode(ctx, 100, 0);
     }
-    else if(e.code == 'Enter'){
-      //형제 노드 만들기
-      createSiblingNode(ctx, 100, 100);
+    else if(e.key == 'Enter'){
+
+      // //=====한글 문제 해결방안
+      // const now = Date.now();
+      // const dt = now - last;
+ 
+      // if(100 > dt ){   
+      //   e.preventDefault();
+      //   e.stopPropagation();
+      //   return
+      // }
+      // last = now;
+      // //======한글 문제 해결방안
+
+        if(actNode === 1){
+          createChildNode(ctx, 100, 0);
+        }
+        else{
+          createSiblingNode(ctx, 100, 100);
+        }
     }
   }
 
@@ -508,24 +646,129 @@ const Canvas = ()=>{
     ctx = canvas.getContext("2d");
 
     canvas.addEventListener('dblclick',handleCanvasDblclick);
-    canvas.addEventListener('mousemove', handleMouseMove);
-    document.addEventListener('keydown', handleKeyDown);
+    //canvas.addEventListener('mousemove', handleMouseMove);
+    document.addEventListener('keyup', handleKeyUp);
     canvas.addEventListener('click', handleOnClick);    
-    document.addEventListener('keypress', handleKeyPress);
+    //document.addEventListener('keypress', handleKeyPress);
     
     return () => {
       canvas.removeEventListener('dblclick',handleCanvasDblclick);
-      canvas.removeEventListener('mousemove', handleMouseMove);
-      document.removeEventListener('keydown', handleKeyDown);
+      //canvas.removeEventListener('mousemove', handleMouseMove);
+      document.removeEventListener('keyup', handleKeyUp);
       canvas.removeEventListener('click', handleOnClick);    
-      document.removeEventListener('keypress', handleKeyPress);
+      //document.removeEventListener('keypress', handleKeyPress);
     }
-  }, [actNode, node, mPoint, text]);
+  }, [actNode, node, spanRef.current]);
 
+
+
+
+
+  // useEffect(() => {
+  //   console.log(node);
+    
+  //   const arr = [];
+    
+  //   for(let i=0; i<node.length; i++){
+  //     const textInput = createInput(node[i].location.y, node[i].location.x, i);
+  //     arr.push(textInput);
+  //   }
+  //   setInput([...arr]);
+    
+  // }, [node])
+
+  const spanStyle = {
+    position: "absolute",
+    display: 'inline-block',
+    top: 20,
+    left: 600,
+  }
+
+  
+  useEffect(() => {
+    canvas = canvasRef.current;
+    ctx = canvas.getContext("2d");
+
+    // txtWidth에 현재 작성되고 있는 텍스트의 길이 (getBoundingClientRect로 얻은 width)를 업데이트 한다.
+    //draw/setnode/bbox/redraw => 변경
+    if(actNode){
+      let nodeArr = cloneDeep(node);
+      let newNode;
+
+      const txtWidth = spanRef.current.getBoundingClientRect().width;
+
+      const index = nodeArr.findIndex(obj => obj.num === actNode);
+      // setNode(ns=>ns.map((n,i)=>i===index ? {...n, text : txt} : n))
+      let actN = nodeArr[index];
+      actN.text = txt;
+
+      //txt길이가 node 넓이보다 큼
+      if(txtWidth >= actN.location.width-53){
+        
+        //기존 도형 지우기
+        ctx.clearRect(actN.location.x, actN.location.y, actN.location.width, actN.location.height);
+        
+        if(txtWidth<=15){
+          newNode = drawRoundRect(ctx, actN.location.x, actN.location.y, 53, actN.location.height, "#FADEE1");
+          ctx.stroke(newNode);
+        }
+        else{          
+          //텍스트 길이에 맞춰 새 도형 그림
+          newNode = drawRoundRect(ctx, actN.location.x, actN.location.y, txtWidth+53, actN.location.height, "#FADEE1");
+          ctx.stroke(newNode);
+        }
+        
+
+
+        //기존 도형의 정보 업데이트
+        actN.location.width = txtWidth+53; 
+        actN.path = newNode;
+        actN.bbox.x1 = actN.location.x;
+        actN.bbox.y1 = actN.location.y;
+        actN.bbox.x2 = actN.location.x+txtWidth+53;
+        actN.bbox.y2 = actN.location.y+actN.location.height;
+
+        //다른 노드 위치조정
+        nodeArr = updateBbox2(nodeArr, actN);
+        nodeArr = redrawNodes(ctx, nodeArr);
+      }
+
+      //txt 길이가 node 넓이보다 쟈금
+      if(txtWidth <= actN.location.width-53){
+        
+        ctx.clearRect(actN.location.x, actN.location.y, actN.location.width, actN.location.height);
+        let newNode = drawRoundRect(ctx, actN.location.x, actN.location.y, txtWidth+53, actN.location.height, '#FADEE1');
+        ctx.stroke(newNode);
+
+        // 기존 도형이 저장되어 있던 node에서 기존도형을 지우고 새 도형으로 업데이트 시킨다.
+        actN.location.width = txtWidth+53; 
+        actN.path = newNode;
+        actN.bbox.x1 = actN.location.x;
+        actN.bbox.y1 = actN.location.y;
+        actN.bbox.x2 = actN.location.x+txtWidth+53;
+        actN.bbox.y2 = actN.location.y+actN.location.height;
+
+        nodeArr = updateBbox2(nodeArr, actN);
+        nodeArr = redrawNodes(ctx, nodeArr);
+      }
+
+      if(typeof txt !== 'undefined'){
+        drawText(ctx, txt, nodeArr[index].location.x, nodeArr[index].location.y-5);
+      }
+      setNode(nodeArr);
+      const textInput = createInput(actN.location.y, actN.location.x, txtWidth);
+      setInput({box : textInput});
+    }
+  }, [txt])
 
 
   return(
-    <canvas ref={canvasRef} className="canvas-board" width='16000' height='10000'></canvas>
+    <div>
+      <canvas ref={canvasRef} className="canvas-board" width='16000' height='10000'></canvas>
+      <span style={spanStyle} ref={spanRef} className='span'>{txt}</span>
+      {/* 선택된 노드가 있으면 input창 출력 */}
+      {input.box}
+    </div>
   )
 }
 
@@ -577,7 +820,10 @@ let activeNode = atom({
   default: 0
 })
 
-
+let inputState = atom({
+  key: 'inputState',
+  default: {box: null}
+})
 
 
 ReactDOM.render(
