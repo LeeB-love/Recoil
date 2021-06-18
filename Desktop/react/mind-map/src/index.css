@@ -68,6 +68,206 @@ input{
   font-size: 16px;
 }
 
+.canvas-container{
+  position: relative;
+}
+
+.canvas-div2{
+  /* background-color: blue; */
+  top: 0;
+  position: absolute;
+  z-index: -2;
+}
+
 /* input:focus{
   outline: none;
 } */
+
+
+/* ======== 사이드 메뉴바 ========= */
+.panel{
+  width: 300px;
+  height: 700px;
+  border: 1px solid rgb(235, 235, 235);
+  border-radius: 20px;
+  background-color: white;
+  position: absolute;
+  box-shadow: 3px 3px 4px rgba(0, 0, 0, 0.13);
+  z-index: 3;
+}
+
+.sub{
+  width: 100%;
+  height: 8%;
+  border-radius: 20px 20px 0px 0px;
+  background-color: #FAF1D8;
+}
+.color-palette{
+  padding-top: 10%;
+  text-align: justify;
+}
+
+.color-palette > span{
+  padding-left: 15px;
+  font-size: 115%;
+  color: rgb(156, 156, 156);
+}
+
+.color-palette > hr{
+  display: inline-block;
+  width: 52%;
+  border: 1px solid rgb(224, 224, 224);
+  background-color: rgb(224, 224, 224);
+}
+.color-palette > div{
+  padding-left: 6%;
+  padding-right: 10%;
+  padding-top:6%;
+  text-align: center;
+}
+
+.color-palette-selectbnt > button{
+  border: none;
+  border-radius: 4px;
+  margin-right: 1px;
+  margin-left: 1px;
+}
+
+.color-palette-selectbnt > button:hover{
+  background-color: #FAF1D8;
+}
+
+/* 색상변경용 파레트 버튼 */
+div:nth-child(4) > button{
+  border-radius: 50%;
+  width: 30px;
+  height: 30px;
+  margin-left: 4px;
+  margin-right: 4px;
+  margin-top: 4px;
+  border: none;
+}
+div:nth-child(4) > button:hover{
+  border: 2px solid #FDAFAB;
+  cursor: pointer;
+}
+div:nth-child(4) > button:active{
+  border: 2px solid #FDAFAB;
+}
+
+
+
+
+
+
+
+.edge-width{
+  padding-top: 15%;
+  text-align: justify;
+}
+.edge-width > span{
+  padding-left: 15px;
+  font-size: 115%;
+  color: rgb(156, 156, 156);
+}
+.edge-width > hr{
+  display: inline-block;
+  width: 44%;
+  border: 1px solid rgb(224, 224, 224);
+  background-color: rgb(224, 224, 224);
+}
+.edge-width > div{
+  padding-left: 3%;
+  padding-right: 10%;
+  padding-top: 5%;
+  text-align: center;
+}
+/* 연결선 굵기 선택버튼 */
+.edge-width-selectbnt > button{
+  border: none;
+  margin-left: 3px;
+  margin-right: 3px;
+  background-color: transparent;
+}
+
+.edge-width-selectbnt > button > hr{
+  display: inline-block;
+  width: 85px;
+  border: 1px solid rgb(165, 165, 165);
+  background-color: rgb(165, 165, 165);
+}
+
+.edge-width-selectbnt > button:hover{
+  background-color: #FAF1D8;
+  cursor: pointer;
+}
+.edge-width-selectbnt > span{
+  vertical-align: middle;
+  font-size: 70%;
+  color: rgb(156, 156, 156);
+}
+
+
+
+
+
+
+.text-size{
+  padding-top: 15%;
+  text-align: justify;
+}
+
+.text-size > span{
+  padding-left: 15px;
+  font-size: 115%;
+  color: rgb(156, 156, 156);
+}
+
+.text-size > hr{
+  display: inline-block;
+  width: 44%;
+  overflow: visible;
+  text-align: end;
+  border: 1px solid rgb(224, 224, 224);
+  background-color: rgb(224, 224, 224);
+}
+
+.text-size > div{
+  padding-left: 6%;
+  padding-right: 10%;
+  padding-top: 10%;
+  text-align: center;
+}
+
+.text-size > div > div{
+  display: inline-block;
+  text-align: center;
+  padding-left: 5%;
+  padding-right: 5%;
+}
+
+.text-size > div > div > span{
+  font-size: 80%;
+  color: rgb(141, 141, 141);
+}
+
+
+
+/* 텍스트 사이즈 변경 버튼 */
+.text-size > div > div > button{
+  border: none;
+  border-radius: 50%;
+  width: 35px;
+  height: 35px;
+  margin-right: 6px;
+  margin-left: 6px;
+}
+
+.text-size > div > div > button:hover{
+  background-color: #FAF1D8;
+  cursor: pointer;
+}
+
+
+
+
